@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traveloop | Home</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Shared Styles -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            text-align: center;
+        }
+        .hero-content h1 { font-size: 5rem; font-weight: 700; margin-bottom: 1rem; }
+        .hero-content p { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;}
+    </style>
+</head>
+<body>
+    <nav class="navbar glass">
+        <a href="index.html" class="logo">
+            <i data-lucide="plane-takeoff"></i> Traveloop
+        </a>
+        <div class="nav-links">
+            <a href="profile.html">My Profile</a>
+            <a href="create_trip.html" class="btn btn-primary" style="color: white;">Plan New Trip</a>
+        </div>
+    </nav>
+
+    <main class="page-content container animate-fade-in">
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Dream. Design.<br><span class="gradient-text">Discover.</span></h1>
+                <p>The intelligent way to plan your next multi-city adventure. Visualize your journey and stay on budget effortlessly.</p>
+                <a href="create_trip.html" class="btn btn-primary btn-lg" style="padding: 1.2rem 3rem; font-size: 1.2rem;">
+                    Start Planning <i data-lucide="arrow-right"></i>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
