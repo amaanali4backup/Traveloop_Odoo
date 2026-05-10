@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traveloop | Create Trip</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .trip-setup-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        @media (max-width: 900px) {
+            .trip-setup-grid { grid-template-columns: 1fr; }
+        }
+
+        .panel { padding: 2rem; }
+        
+        .stop-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
+        .stop-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px;}
+        
+        .search-results {
+            background: #111;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .search-item { padding: 0.8rem; cursor: pointer; }
+        .search-item:hover { background: var(--primary); }
+    </style>
+</head>
+<body>
+    <nav class="navbar glass">
+        <a href="index.html" class="logo">
+            <i data-lucide="plane-takeoff"></i> Traveloop
+        </a>
+        <div class="nav-links">
+            <a href="profile.html">My Profile</a>
+            <a href="#" class="btn btn-primary" onclick="alert('In Create Mode'); return false;">Active Plan</a>
+        </div>
+    </nav>
+
+    <main class="page-content container animate-fade-in">
+        <div class="glass panel" style="margin-bottom: 2rem;">
+            <h2><i data-lucide="map"></i> Name Your Journey</h2>
+            <div class="form-group" style="margin-top: 1rem;">
+                <input type="text" id="trip-name" class="form-control" placeholder="e.g. Summer Eurotrip 2026" style="font-size: 1.5rem;" required>
+            </div>
+            <div class="form-group">
+                <textarea id="trip-desc" class="form-control" placeholder="A short description of this trip..."></textarea>
+            </div>
+        </div>
+
+        <div class="trip-setup-grid">
+            <!-- Add Stops Panel -->
+            <div class="glass panel">
+                <h3>Add Destinations</h3>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Search and add cities to your trip.</p>
+                
+                <div class="form-group">
+                    <input type="text" id="city-search" class="form-control" placeholder="Search cities (e.g. Paris, Tokyo)..." autocomplete="off">
+                    <div id="search-results" class="search-results" style="display: none;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="date" id="stop-start" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>End Date</label>
+                    <input type="date" id="stop-end" class="form-control">
+                </div>
+
+                <button id="btn-add-stop" class="btn btn-primary btn-block">Add to Itinerary</button>
+            </div>
+
+            <!-- Current Stops Overview -->
+            <div class="glass panel">
+                <h3>Current Itinerary</h3>
+                <div id="stop-list" class="stop-list">
+                    <!-- Stops render here -->
+                    <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                        No destinations added yet.
+                    </div>
+                </div>
+
+                <button id="btn-finalize" class="btn btn-primary btn-block" style="margin-top: 2rem; background: var(--secondary);">
+                    Finalize & View Timeline <i data-lucide="arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+    <script>
+        // Page specific logic
+        const state = {
+            name: '',
+            desc: '',
+            stops: []
+        };
+
+        const citySearch = document.getElementById('city-search');
+        const searchResults = document.getElementById('search-results');
+        const stopList = document.getElementById('stop-list');
+        const btnAddStop = document.getElementById('btn-add-stop');
+        const btnFinalize = document.getElementById('btn-finalize');
+
+        // Search logic
+        citySearch.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            if (query.length < 2) {
+                searchResults.style.display = 'none';
+                return;
+            }
+            const matches = CITIES_DB.filter(c => c.name.toLowerCase().includes(query) || c.country.toLowerCase().includes(query));
+            
+            searchResults.innerHTML = matches.map(c => `<div class="search-item" onclick="selectCity('${c.name}')">${c.name}, ${c.country}</div>`).join('');
+            searchResults.style.display = matches.length ? 'block' : 'none';
+        });
+
+        window.selectCity = (name) => {
+            citySearch.value = name;
+            searchResults.style.display = 'none';
+        };
+
+        // Add Stop logic
+        btnAddStop.addEventListener('click', () => {
+            const city = citySearch.value;
+            const start = document.getElementById('stop-start').value;
+            const end = document.getElementById('stop-end').value;
+
+            if(!city || !start || !end) return alert('Please fill all fields');
+            const cityData = Helpers.getCityData(city);
+            if(!cityData) return alert('Select a valid city from the list');
+
+            state.stops.push({
+                id: Helpers.generateId(),
+                city_id: cityData.city_id,
+                city,
+                start,
+                end,
+                duration: Helpers.calculateDays(start, end)
+            });
+
+            citySearch.value = '';
+            renderStops();
+        });
+
+        function renderStops() {
+            if(state.stops.length === 0) return;
+            
+            stopList.innerHTML = state.stops.map(s => `
+                <div class="stop-item">
+                    <div>
+                        <strong>${Helpers.escapeHTML(s.city)}</strong>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">${s.start} to ${s.end} (${s.duration} days)</div>
+                    </div>
+                    <button class="btn btn-outline" style="padding: 0.4rem; color: #ff4d4d; border-color: #ff4d4d;" onclick="removeStop('${s.id}')">
+                        <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                    </button>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        window.removeStop = (id) => {
+            state.stops = state.stops.filter(s => s.id !== id);
+            renderStops();
+            if(state.stops.length === 0) {
+                stopList.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 2rem;">No destinations added yet.</div>';
+            }
+        };
+
+        // Finalize logic
+        btnFinalize.addEventListener('click', () => {
+            state.name = document.getElementById('trip-name').value || 'My Awesome Trip';
+            state.desc = document.getElementById('trip-desc').value;
+            
+            if(state.stops.length === 0) return alert('Add at least one destination!');
+
+            // Save active trip for the itinerary page
+            DAL.saveActiveDraft(state);
+            
+            // Navigate to itinerary
+            window.location.href = 'itinerary.html';
+        });
+
+        // Initialize state if recovering
+        const saved = DAL.getActiveDraft();
+        if(saved && saved.stops.length > 0) {
+            state.stops = saved.stops;
+            document.getElementById('trip-name').value = saved.name || '';
+            document.getElementById('trip-desc').value = saved.desc || '';
+            renderStops();
+        }
+    </script>
+</body>
+</html>
