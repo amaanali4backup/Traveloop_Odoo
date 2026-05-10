@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traveloop | Sign Up</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .auth-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 2rem auto;
+            padding: 3rem;
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .auth-header h2 { font-size: 2rem; margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body style="display: flex; align-items: center; justify-content: center; min-height: 100vh;">
+    
+    <div class="auth-container glass animate-fade-in">
+        <div class="auth-header">
+            <h2>Join Traveloop</h2>
+            <p style="color: var(--text-muted);">Create your account to start planning.</p>
+        </div>
+
+        <form id="signup-form">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="fullname" class="form-control" placeholder="Alex Rivers" required>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="email" class="form-control" placeholder="alex@example.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+            </div>
+            
+            <div id="error-message" style="color: #ff4d4d; margin-bottom: 1rem; display: none;"></div>
+            
+            <button type="submit" id="btn-submit" class="btn btn-primary btn-block">Create Account</button>
+        </form>
+
+        <p style="text-align: center; margin-top: 2rem; color: var(--text-muted);">
+            Already have an account? <a href="login.html" style="color: var(--primary);">Sign in here</a>
+        </p>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+
+        document.getElementById('signup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit');
+            const errorDiv = document.getElementById('error-message');
+            
+            btn.innerHTML = 'Creating Account...';
+            btn.disabled = true;
+            errorDiv.style.display = 'none';
+
+            const name = document.getElementById('fullname').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('traveloop_token', data.token);
+                    localStorage.setItem('traveloop_user', JSON.stringify(data.user));
+                    window.location.href = '../profile.html';
+                } else {
+                    throw new Error(data.error || 'Signup failed');
+                }
+            } catch (error) {
+                errorDiv.innerText = error.message;
+                errorDiv.style.display = 'block';
+                btn.innerHTML = 'Create Account';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

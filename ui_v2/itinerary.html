@@ -111,42 +111,14 @@
 
     <script src="app.js"></script>
     <script>
-        let activeTrip = null;
-        let isViewMode = false;
-
-        async function init() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const tripId = urlParams.get('id');
-
-            if (tripId) {
-                isViewMode = true;
-                activeTrip = await DAL.getTripById(tripId);
-                if (!activeTrip) {
-                    alert('Trip not found or unauthorized.');
-                    window.location.href = 'profile.html';
-                    return;
-                }
-                
-                // Hide save buttons since it's already saved
-                document.querySelector('.budget-panel .btn-primary').style.display = 'none';
-                document.querySelector('.budget-panel .btn-outline').style.display = 'none';
-                
-            } else {
-                activeTrip = DAL.getActiveDraft();
-                if (!activeTrip) {
-                    window.location.href = 'create_trip.html';
-                    return;
-                }
-            }
-
-            document.getElementById('display-name').innerText = activeTrip.name;
-            document.getElementById('display-desc').innerText = activeTrip.desc || 'No description provided.';
-            
-            if (window.CITIES_PROMISE) {
-                await window.CITIES_PROMISE;
-            }
-            renderData();
+        const activeTrip = DAL.getActiveDraft();
+        
+        if (!activeTrip) {
+            window.location.href = 'create_trip.html'; // redirect if nothing to show
         }
+
+        document.getElementById('display-name').innerText = activeTrip.name;
+        document.getElementById('display-desc').innerText = activeTrip.desc || 'No description provided.';
 
         function renderData() {
             let totalBudget = 0;
@@ -155,14 +127,13 @@
 
             activeTrip.stops.forEach((stop, i) => {
                 const cityData = Helpers.getCityData(stop.city);
-                const costIndex = cityData ? (cityData.cost_index || cityData.dailyCost || 0) : 0;
-                const cost = costIndex * stop.duration;
+                const cost = cityData ? cityData.dailyCost * stop.duration : 0;
                 totalBudget += cost + 500; // Add flat 500 for flights per stop for mock
 
                 journeyHtml.push(`
                     <div class="journey-node">
-                        <div class="node-dot" style="background-image: url('${cityData ? (cityData.cover_photo || cityData.image) : ''}')"></div>
-                        <strong>${Helpers.escapeHTML(stop.city)}</strong>
+                        <div class="node-dot" style="background-image: url('${cityData ? cityData.image : ''}')"></div>
+                        <strong>${stop.city}</strong>
                         <span style="font-size: 0.8rem; color: var(--text-muted);">${stop.duration} Days</span>
                     </div>
                 `);
@@ -170,7 +141,7 @@
                 detailsHtml.push(`
                     <div style="border-left: 2px dashed var(--glass-border); padding-left: 1.5rem; position: relative;">
                         <i data-lucide="map-pin" style="position: absolute; left: -13px; top: 0; color: var(--primary); background: var(--bg-dark);"></i>
-                        <h4>${Helpers.escapeHTML(stop.city)}</h4>
+                        <h4>${stop.city}</h4>
                         <p style="color: var(--text-muted); font-size: 0.9rem;">${stop.start} to ${stop.end}</p>
                         <p style="margin-top: 0.5rem;">Estimated local cost: <strong>$${cost}</strong></p>
                     </div>
@@ -183,13 +154,11 @@
             lucide.createIcons();
             
             // store budget for saving
-            if (!isViewMode) {
-                activeTrip.totalBudget = totalBudget;
-                DAL.saveActiveDraft(activeTrip);
-            }
+            activeTrip.totalBudget = totalBudget;
+            DAL.saveActiveDraft(activeTrip);
         }
 
-        init();
+        renderData();
 
         window.saveToProfile = async () => {
             const btn = document.querySelector('.btn-primary');

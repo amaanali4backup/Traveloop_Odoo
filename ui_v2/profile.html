@@ -112,7 +112,7 @@
                     return `
                         <div class="trip-card glass" onclick="viewTrip('${trip.trip_id}')">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                <h4 style="margin: 0; line-height: 1.3;">${Helpers.escapeHTML(trip.name)}</h4>
+                                <h4 style="margin: 0; line-height: 1.3;">${trip.name}</h4>
                                 <span style="background: rgba(255,107,53,0.2); color: var(--primary); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">$${trip.total_budget ? trip.total_budget.toLocaleString() : 0}</span>
                             </div>
                             <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem;">${trip.stops_count} Destinations</p>
@@ -125,7 +125,9 @@
             lucide.createIcons();
 
             window.viewTrip = (id) => {
-                window.location.href = `itinerary.html?id=${id}`;
+                // In a real app we'd fetch the specific trip details by ID here.
+                // For this demo, we'll just redirect to the builder blank or load placeholder via DAL
+                alert("This would fetch Trip ID " + id + " from the API and render the itinerary.");
             };
         }
 

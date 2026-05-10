@@ -136,12 +136,10 @@
             const end = document.getElementById('stop-end').value;
 
             if(!city || !start || !end) return alert('Please fill all fields');
-            const cityData = Helpers.getCityData(city);
-            if(!cityData) return alert('Select a valid city from the list');
+            if(!Helpers.getCityData(city)) return alert('Select a valid city from the list');
 
             state.stops.push({
                 id: Helpers.generateId(),
-                city_id: cityData.city_id,
                 city,
                 start,
                 end,
@@ -158,7 +156,7 @@
             stopList.innerHTML = state.stops.map(s => `
                 <div class="stop-item">
                     <div>
-                        <strong>${Helpers.escapeHTML(s.city)}</strong>
+                        <strong>${s.city}</strong>
                         <div style="font-size: 0.8rem; color: var(--text-muted);">${s.start} to ${s.end} (${s.duration} days)</div>
                     </div>
                     <button class="btn btn-outline" style="padding: 0.4rem; color: #ff4d4d; border-color: #ff4d4d;" onclick="removeStop('${s.id}')">
